@@ -82,6 +82,7 @@ final class PostProcessorRegistrationDelegate {
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
+			//Todo 首先找到所有实现了BeanDefinitionRegistryPostProcessor接口的类，执行实现了PriorityOrdered接口的类
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
@@ -90,12 +91,13 @@ final class PostProcessorRegistrationDelegate {
 					processedBeans.add(ppName);
 				}
 			}
-			sortPostProcessors(currentRegistryProcessors, beanFactory);
+			sortPostProcessors(currentRegistryProcessors, beanFactory); // 排序
 			registryProcessors.addAll(currentRegistryProcessors);
-			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
+			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry); // 执行postProcessBeanDefinitionRegistry接口实现
 			currentRegistryProcessors.clear();
 
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
+			//Todo 其次找到所有实现实现了BeanDefinitionRegistryPostProcessor接口的类，并执行实现了Ordered接口的类
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
@@ -103,12 +105,13 @@ final class PostProcessorRegistrationDelegate {
 					processedBeans.add(ppName);
 				}
 			}
-			sortPostProcessors(currentRegistryProcessors, beanFactory);
+			sortPostProcessors(currentRegistryProcessors, beanFactory); // 排序
 			registryProcessors.addAll(currentRegistryProcessors);
-			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
+			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry); // 执行postProcessBeanDefinitionRegistry接口实现
 			currentRegistryProcessors.clear();
 
 			// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
+			//Todo 最后找到所有实现实现了BeanDefinitionRegistryPostProcessor接口的类
 			boolean reiterate = true;
 			while (reiterate) {
 				reiterate = false;
@@ -120,13 +123,14 @@ final class PostProcessorRegistrationDelegate {
 						reiterate = true;
 					}
 				}
-				sortPostProcessors(currentRegistryProcessors, beanFactory);
+				sortPostProcessors(currentRegistryProcessors, beanFactory); //排序
 				registryProcessors.addAll(currentRegistryProcessors);
-				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
+				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);// 执行postProcessBeanDefinitionRegistry接口实现
 				currentRegistryProcessors.clear();
 			}
 
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
+			//Todo 再触发postProcessBeanFactory接口实现
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
 		}
@@ -138,6 +142,7 @@ final class PostProcessorRegistrationDelegate {
 
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let the bean factory post-processors apply to them!
+		//Todo 找到所有实现了BeanFactoryPostProcessor接口的类
 		String[] postProcessorNames =
 				beanFactory.getBeanNamesForType(BeanFactoryPostProcessor.class, true, false);
 
@@ -151,34 +156,40 @@ final class PostProcessorRegistrationDelegate {
 				// skip - already processed in first phase above
 			}
 			else if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+				//Todo 从实现了BeanFactoryPostProcessor接口的类中找到实现了PriorityOrdered接口的
 				priorityOrderedPostProcessors.add(beanFactory.getBean(ppName, BeanFactoryPostProcessor.class));
 			}
 			else if (beanFactory.isTypeMatch(ppName, Ordered.class)) {
+				//Todo 从实现了BeanFactoryPostProcessor接口的类中找到实现了Ordered接口的
 				orderedPostProcessorNames.add(ppName);
 			}
 			else {
+				//Todo 从实现了BeanFactoryPostProcessor接口的剩余类
 				nonOrderedPostProcessorNames.add(ppName);
 			}
 		}
 
 		// First, invoke the BeanFactoryPostProcessors that implement PriorityOrdered.
-		sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
-		invokeBeanFactoryPostProcessors(priorityOrderedPostProcessors, beanFactory);
+		//Todo 先执行实现了PriorityOrdered接口的
+		sortPostProcessors(priorityOrderedPostProcessors, beanFactory); // 排序
+		invokeBeanFactoryPostProcessors(priorityOrderedPostProcessors, beanFactory); // 执行接口实现
 
 		// Next, invoke the BeanFactoryPostProcessors that implement Ordered.
+		//Todo 其次执行实现了Ordered接口的
 		List<BeanFactoryPostProcessor> orderedPostProcessors = new ArrayList<>();
 		for (String postProcessorName : orderedPostProcessorNames) {
 			orderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));
 		}
-		sortPostProcessors(orderedPostProcessors, beanFactory);
-		invokeBeanFactoryPostProcessors(orderedPostProcessors, beanFactory);
+		sortPostProcessors(orderedPostProcessors, beanFactory); // 排序
+		invokeBeanFactoryPostProcessors(orderedPostProcessors, beanFactory);// 执行接口实现
 
 		// Finally, invoke all other BeanFactoryPostProcessors.
+		//Todo 最后执行剩余的
 		List<BeanFactoryPostProcessor> nonOrderedPostProcessors = new ArrayList<>();
 		for (String postProcessorName : nonOrderedPostProcessorNames) {
 			nonOrderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));
 		}
-		invokeBeanFactoryPostProcessors(nonOrderedPostProcessors, beanFactory);
+		invokeBeanFactoryPostProcessors(nonOrderedPostProcessors, beanFactory); // 执行接口实现
 
 		// Clear cached merged bean definitions since the post-processors might have
 		// modified the original metadata, e.g. replacing placeholders in values...
